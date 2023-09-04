@@ -20,7 +20,7 @@ public class CharacterMovement : MonoBehaviour
     private float gravity = 9.81f;
 
     private Vector3 momentum;
-    private float stopVelocity = 0.001f; // The minimum velocity threshold before stopped.
+    private float stopVelocity = 0.001f; // The velocity threshold considered stopped.
 
     private void Start()
     {
@@ -29,15 +29,10 @@ public class CharacterMovement : MonoBehaviour
 
     private void Update()
     {
-        // Calculate forward motion
-        //Vector3 boostVelocity = CalculateVelocityFromHandMotion();
-
-        //momentum += boostVelocity;
-
         // Apply acceleration from motion.
         momentum += CalculateAccelerationFromHandMotion();
 
-        // Apply gravity
+        // Apply gravity.
         momentum.y -= gravity * Time.deltaTime;
 
         // Cast a ray to detect ground and calculate the ground normal
@@ -87,30 +82,90 @@ public class CharacterMovement : MonoBehaviour
     {
         Vector3 velocity = Vector3.zero;
 
-        velocity += CalculateNodeVelocity(XRNode.LeftHand);
-        velocity += CalculateNodeVelocity(XRNode.RightHand);
+        //velocity += CalculateNodeVelocity(XRNode.LeftHand);
+        //velocity += CalculateNodeVelocity(XRNode.RightHand);
 
-        if (velocity.magnitude > boostThreshold)
-        {
-            return velocity;
-        }
+        velocity += CalculateControllerForwardInput();
+        //velocity += CalculateControllerForwardInput();
 
-        return Vector3.zero;
+        return velocity;
     }
 
+    private Vector3 CalculateControllerForwardInput()
+    {
+        Vector3 averageVelocity = Vector3.zero;
+        int contributingHands = 0;
+        /*if(nodeManager.TryGetNodeVelocity(XRNode.LeftHand, out Vector3 leftHandVelocity))
+        {
+            Vector3 localLeftHandVelocity = transform.InverseTransformDirection(leftHandVelocity);
+            averageVelocity += localLeftHandVelocity;
+            contributingHands++;
+        }*/
+
+        if(TryCalculateHandInputVelocity(XRNode.LeftHand, out Vector3 leftHandVelocity))
+        {
+            averageVelocity += leftHandVelocity;
+            contributingHands++;
+        }
+
+        if (TryCalculateHandInputVelocity(XRNode.RightHand, out Vector3 rightHandVelocity))
+        {
+            //Vector3 localRightHandVelocity = transform.InverseTransformDirection(rightHandVelocity);
+            //averageVelocity += localRightHandVelocity;
+            averageVelocity += rightHandVelocity;
+            contributingHands++;
+        }
+        
+        if(contributingHands > 0)
+        {
+            averageVelocity /= contributingHands;
+
+            // Transform the average velocity from global space to local space.
+            Vector3 localAverageVelocity = transform.InverseTransformDirection(averageVelocity);
+
+            // Ensure that the direction is relative to the character's forward direction.
+            localAverageVelocity.x += localAverageVelocity.y;
+            localAverageVelocity.y = 0; // Zero out the vertical component.
+            localAverageVelocity.Normalize();
+
+            return localAverageVelocity;
+        }
+
+        return averageVelocity;
+    }
+
+    private bool TryCalculateHandInputVelocity(XRNode node, out Vector3 handVelocity)
+    {
+        if (nodeManager.TryGetNodeVelocity(node, out handVelocity) && handVelocity.magnitude > boostThreshold)
+        {
+            //Vector3 localRightHandVelocity = transform.InverseTransformDirection(rightHandVelocity);
+            //averageVelocity += localRightHandVelocity;
+            return true;
+        }
+        else return false;
+    }
+    /*
     private Vector3 CalculateNodeVelocity(XRNode node)
     {
         Vector3 velocity = Vector3.zero;
 
         if (nodeManager.TryGetNodeVelocity(node, out Vector3 nodeVelocity) && nodeManager.TryGetNodeForward(node, out Vector3 nodeForward))
         {
-            // Get the normalized direction from the velocity vector
-            Vector3 nodePosition = nodeManager.TryGetNodePosition(node, out nodePosition) ? nodePosition : Vector3.zero;
-
-            Debug.DrawRay(headTransform.position, nodeForward, Color.green); // Draw a ray from headTransform position in the direction of nodeForward
-
             // Return the magnitude of the nodeVelocity vector in its direction
             velocity = nodeForward * nodeVelocity.magnitude;// headTransform.forward * nodeVelocity.magnitude;//nodeForward * nodeVelocity.magnitude;
+        }
+
+        return velocity;
+    }*/
+
+    private Vector3 CalculateNodeVelocity(XRNode node)
+    {
+        Vector3 velocity = Vector3.zero;
+
+        if (nodeManager.TryGetNodeVelocity(node, out Vector3 nodeVelocity))
+        {
+            // Return the magnitude of the nodeVelocity vector in its direction
+            velocity = nodeVelocity;// * nodeVelocity.magnitude;// headTransform.forward * nodeVelocity.magnitude;//nodeForward * nodeVelocity.magnitude;
         }
 
         return velocity;

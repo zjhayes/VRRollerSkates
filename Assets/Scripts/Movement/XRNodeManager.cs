@@ -20,12 +20,10 @@ public class XRNodeManager : MonoBehaviour
 
     public bool TryGetNodeState(XRNode nodeType, out XRNodeState nodeState)
     {
-        nodeState = new XRNodeState();
         if(nodeCache.TryGetValue(nodeType, out nodeState))
         {
             return true;
-        }
-        return false;
+        } else return false;
     }
 
     public bool TryGetNodePosition(XRNode node, out Vector3 position)
@@ -35,10 +33,7 @@ public class XRNodeManager : MonoBehaviour
             nodeState.TryGetPosition(out position))
         {
             return true;
-        }
-
-        // Return zero vector, node was not found.
-        return false;
+        } else return false;
     }
 
     // Get the rotation of the GameObject associated with the XRNode.
@@ -49,10 +44,7 @@ public class XRNodeManager : MonoBehaviour
             nodeState.TryGetRotation(out rotation))
         {
             return true;
-        }
-
-        // Return identity rotation if the node state is not available.
-        return false;
+        } else return false;
     }
 
     public bool TryGetNodeVelocity(XRNode nodeType, out Vector3 velocity)
@@ -63,8 +55,7 @@ public class XRNodeManager : MonoBehaviour
         {
             // Node velocity found.
             return true;
-        }
-        return false; // Couldn't get velocity.
+        } else return false; // Couldn't get velocity.
     }
 
     public bool TryGetNodeForward(XRNode nodeType, out Vector3 forward)
@@ -75,8 +66,7 @@ public class XRNodeManager : MonoBehaviour
         {
             forward = orientation * Vector3.forward;
             return true;
-        }
-        return false;
+        } else return false;
     }
 
     public void CacheNode(XRNodeState nodeState)
