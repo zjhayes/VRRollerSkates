@@ -1,17 +1,14 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
 
 
-public class CharacterMovement : MonoBehaviour
+public class CharacterMovement : GameBehaviour
 {
     [SerializeField]
     private CharacterController controller;
     [SerializeField]
     Transform headTransform;
-    [SerializeField]
-    private XRNodeManager nodeManager;
     [SerializeField]
     private float boostThreshold = 1f;
     [SerializeField]
@@ -32,10 +29,54 @@ public class CharacterMovement : MonoBehaviour
     private void Update()
     {
         HandleMovementFromHandMotion();
-        
-        // Apply gravity.
-        momentum.y -= gravity * Time.deltaTime;
 
+        ApplyGravity();
+
+        ApplySlope();
+
+        ApplyMomentumDecay();
+
+        ClampMomentum();
+
+        ApplyMomentumToMovement();
+    }
+
+    private void ApplyMomentumToMovement()
+    {
+        Debug.Log(momentum);
+        controller.Move(momentum * Time.deltaTime);
+    }
+
+    private void ApplyGravity()
+    {
+        momentum.y -= gravity * Time.deltaTime;
+    }
+
+    private void ApplyMomentumDecay()
+    {
+        if (momentum.magnitude > 0f)
+        {
+            // Apply smoothed momentum decay.
+            momentum = Vector3.Lerp(momentum, Vector3.zero, Time.deltaTime / momentumDecayTime);
+        }
+    }
+
+    private void ClampMomentum()
+    {
+
+        if (momentum.magnitude > maximumVelocity)
+        {
+            // Clamp to maximum velocity.
+            momentum = momentum.normalized * maximumVelocity;
+        }
+        else if (momentum.magnitude < stopVelocity)
+        {
+            momentum = Vector3.zero;
+        }
+    }
+
+    private void ApplySlope()
+    {
         // Cast a ray to detect ground and calculate the ground normal.
         RaycastHit hit;
         Vector3 groundNormal = Vector3.up; // Default to upright
@@ -59,24 +100,6 @@ public class CharacterMovement : MonoBehaviour
             float blendFactor = 0.5f;
             momentum = Vector3.Lerp(momentum, slopeAdjustedMomentum, blendFactor); // Adjust blending factor as needed
         }
-
-        if (momentum.magnitude > 0f)
-        {
-            // Apply smoothed momentum decay.
-            momentum = Vector3.Lerp(momentum, Vector3.zero, Time.deltaTime / momentumDecayTime);
-        }
-        
-        if (momentum.magnitude > maximumVelocity)
-        {
-            // Clamp to maximum velocity.
-            momentum = momentum.normalized * maximumVelocity;
-        }
-        else if(momentum.magnitude < stopVelocity)
-        {
-            momentum = Vector3.zero;
-        }
-
-        controller.Move(momentum * Time.deltaTime);
     }
 
     private void HandleMovementFromHandMotion()
@@ -88,10 +111,13 @@ public class CharacterMovement : MonoBehaviour
         Vector3 direction = CalculateForwardDirectionFromInput(controllerMotionInput);
         float magnitude = CalculateForwardMagnitudeFromInput(controllerMotionInput);
         // Calculate the final velocity by multiplying the direction by the magnitude.
-        Vector3 finalVelocity = direction * magnitude;
+        Vector3 velocity = direction * magnitude;
 
         // Transform the final velocity from local space to global space.
-        momentum += transform.TransformDirection(finalVelocity);
+        Vector3 localVelocity = transform.TransformDirection(velocity);
+
+        // Add to momentum.
+        momentum += localVelocity;
 
         // Rotate character.
         float rotationInput = CalculateRotationFromInput(controllerMotionInput);
@@ -138,7 +164,7 @@ public class CharacterMovement : MonoBehaviour
 
     private bool TryCalculateControllerVelocity(XRNode node, out Vector3 handVelocity)
     {
-        if (nodeManager.TryGetNodeVelocity(node, out handVelocity) && handVelocity.magnitude > boostThreshold)
+        if (gameManager.XR.NodeManager.TryGetNodeVelocity(node, out handVelocity) && handVelocity.magnitude > boostThreshold)
         {
             return true;
         }
