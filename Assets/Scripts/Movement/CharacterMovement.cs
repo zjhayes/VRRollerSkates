@@ -6,17 +6,19 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField]
     private CharacterController controller;
     [SerializeField]
-    private XRNodeManager nodeManager;
+    Transform headTransform;
     [SerializeField]
-    private float boostMultiplier = 1f;
+    private XRNodeManager nodeManager;
     [SerializeField]
     private float boostThreshold = 1f;
     [SerializeField]
     private float maximumVelocity = 10f;
+    [SerializeField]
+    private float momentumDecay = 0.99f;
+    [SerializeField]
+    private float gravity = 9.81f;
+
     private Vector3 momentum;
-    public float gravity = 9.81f;
-    public float slopeFriction = 0.5f;
-    private float momentumDecay = 0.9f;
 
     private void Start()
     {
@@ -25,15 +27,13 @@ public class CharacterMovement : MonoBehaviour
 
     private void Update()
     {
-        Vector3 velocity = CalculateVelocityFromHandMotion();
         // Calculate forward motion
-        Vector3 currentVelocity = controller.velocity;
-        Vector3 moveDirection = momentum;
+        Vector3 boostVelocity = CalculateVelocityFromHandMotion();
 
-        moveDirection += velocity * boostMultiplier;
+        momentum += boostVelocity;
 
         // Apply gravity
-        moveDirection.y -= gravity * Time.deltaTime;
+        momentum.y -= gravity * Time.deltaTime;
 
         // Cast a ray to detect ground and calculate the ground normal
         RaycastHit hit;
@@ -48,27 +48,24 @@ public class CharacterMovement : MonoBehaviour
 
         if (slopeAngle > 0f)
         {
-            Debug.Log(slopeAngle);
-
             // Calculate a speed multiplier based on the slope angle
-            float slopeSpeedMultiplier = Mathf.Lerp(1f, 5f, slopeAngle / 45f);
+            float slopeSpeedMultiplier = Mathf.Lerp(1f, 1.5f, slopeAngle / 45f);
 
             // Apply the speed multiplier to the move direction
-            moveDirection = Vector3.ProjectOnPlane(moveDirection, groundNormal) * slopeSpeedMultiplier;
+            momentum = Vector3.ProjectOnPlane(momentum, groundNormal) * slopeSpeedMultiplier;
         }
         else
         {
             momentum *= momentumDecay;
         }
 
-        momentum += currentVelocity;
-
+        // Clamp to maximum velocity.
         if (momentum.magnitude > maximumVelocity)
         {
             momentum = momentum.normalized * maximumVelocity;
         }
 
-        controller.Move(moveDirection * Time.deltaTime);
+        controller.Move(momentum * Time.deltaTime);
     }
 
     private Vector3 CalculateVelocityFromHandMotion()
@@ -88,7 +85,7 @@ public class CharacterMovement : MonoBehaviour
         {
             if (nodeVelocity.magnitude > boostThreshold)
             {
-                return transform.forward * nodeVelocity.magnitude;
+                return headTransform.forward * nodeVelocity.magnitude;
             }
         }
         return velocity;
