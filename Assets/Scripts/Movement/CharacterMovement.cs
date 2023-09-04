@@ -119,19 +119,59 @@ public class CharacterMovement : MonoBehaviour
         if(contributingHands > 0)
         {
             averageVelocity /= contributingHands;
-
+            /*
             // Transform the average velocity from global space to local space.
             Vector3 localAverageVelocity = transform.InverseTransformDirection(averageVelocity);
-
+            
             // Ensure that the direction is relative to the character's forward direction.
-            localAverageVelocity.x += localAverageVelocity.y;
+            localAverageVelocity.x = localAverageVelocity.x + localAverageVelocity.y;
             localAverageVelocity.y = 0; // Zero out the vertical component.
             localAverageVelocity.Normalize();
 
-            return localAverageVelocity;
+            return localAverageVelocity;*/
+
+            // Calculate the magnitude of the total velocity.
+            float magnitude = averageVelocity.magnitude;
+
+            // Normalize the total velocity to get the direction.
+            Vector3 direction = averageVelocity.normalized;
+
+            // Extract the X-axis motion for rotation.
+            float rotationInput = direction.x;
+
+            // Calculate the forward motion by removing the X-axis contribution.
+            direction.x = 0;
+
+            // Ensure that the direction is relative to the character's forward direction.
+            direction.z = direction.z + direction.y;
+            direction.y = 0; // Zero out the vertical component.
+            direction.Normalize();
+
+            // Calculate the final velocity by multiplying the direction by the magnitude.
+            Vector3 finalVelocity = direction * magnitude;
+
+            // Transform the final velocity from local space to global space.
+            finalVelocity = transform.TransformDirection(finalVelocity);
+
+            // Rotate the character based on the X-axis motion.
+            RotateCharacter(rotationInput);
+
+            return finalVelocity;
         }
 
         return averageVelocity;
+    }
+
+    private void RotateCharacter(float rotationInput)
+    {
+        // You can adjust the rotation speed based on the input.
+        float rotationSpeed = 45f; // Adjust as needed.
+
+        // Calculate the rotation angle based on input and time.
+        float rotationAngle = rotationInput * rotationSpeed * Time.deltaTime;
+        
+        // Rotate the character around the Y-axis.
+        transform.Rotate(Vector3.up, rotationAngle);
     }
 
     private bool TryCalculateHandInputVelocity(XRNode node, out Vector3 handVelocity)
