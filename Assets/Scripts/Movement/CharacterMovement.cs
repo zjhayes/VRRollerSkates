@@ -23,58 +23,14 @@ public class CharacterMovement : MonoBehaviour
         momentum = Vector3.zero;
     }
 
-    /*private void Update()
-    {
-        Vector3 velocity = Vector3.zero; // controller.velocity;
-
-        if (TryGetNodeVelocity(XRNode.LeftHand, out Vector3 leftHandVelocity))
-        {
-            if (leftHandVelocity.magnitude > boostThreshold)
-            {
-                velocity += transform.forward * leftHandVelocity.magnitude; //transform.TransformDirection(leftHandVelocity);
-            }
-        }
-
-        if(TryGetNodeVelocity(XRNode.RightHand, out Vector3 rightHandVelocity))
-        {
-            if (rightHandVelocity.magnitude > boostThreshold)
-            {
-                velocity += transform.forward * rightHandVelocity.magnitude;
-            }
-        }
-
-        if (TryGetNodeVelocity(XRNode.Head, out Vector3 headVelocity))
-        {
-            //Debug.Log("Head: " + headVelocity.magnitude);
-            //velocity /= headVelocity.magnitude;
-        }
-
-        Vector3 moveDirection = velocity * boostMultiplier;
-        controller.Move(moveDirection * Time.deltaTime);
-    }*/
-
     private void Update()
     {
+        Vector3 velocity = CalculateVelocityFromHandMotion();
         // Calculate forward motion
         Vector3 currentVelocity = controller.velocity;
-        /*
-        if(controller.velocity != Vector3.zero)
-        {
-            Debug.Log("XR Moving");
-        }
-
-        if (controller.velocity.sqrMagnitude > momentum.sqrMagnitude)
-        {
-            momentum = new Vector3(controller.velocity.x, 0f, controller.velocity.z);
-            if (momentum.magnitude > maximumVelocity)
-            {
-                momentum = momentum.normalized * maximumVelocity;
-            }
-        }*/
-
         Vector3 moveDirection = momentum;
 
-        //momentum *= 0.9f; // friction
+        moveDirection += velocity * boostMultiplier;
 
         // Apply gravity
         moveDirection.y -= gravity * Time.deltaTime;
@@ -107,30 +63,35 @@ public class CharacterMovement : MonoBehaviour
 
         momentum += currentVelocity;
 
-        if(momentum.magnitude > maximumVelocity)
+        if (momentum.magnitude > maximumVelocity)
         {
             momentum = momentum.normalized * maximumVelocity;
-        }    
+        }
 
-        //moveDirection *= slopeFriction; // Apply slope friction.
-
-        /*
-        // Adjust movement for slopes
-        //if (slopeAngle > controller.slopeLimit)
-        if (slopeAngle > 0f)
-        {
-            // Calculate a speed multiplier based on the slope angle
-            float slopeSpeedMultiplier = Mathf.Lerp(1f, 5f, slopeAngle / 45f);
-
-            // Apply the speed multiplier to the move direction
-            moveDirection = Vector3.ProjectOnPlane(moveDirection, groundNormal) * slopeSpeedMultiplier;
-
-            //moveDirection *= slopeFriction; // Apply slope friction.
-        }*/
-
-
-        // Move the character
         controller.Move(moveDirection * Time.deltaTime);
+    }
+
+    private Vector3 CalculateVelocityFromHandMotion()
+    {
+        Vector3 velocity = Vector3.zero;
+
+        velocity += CalculateNodeVelocity(XRNode.LeftHand);
+        velocity += CalculateNodeVelocity(XRNode.RightHand);
+
+        return velocity;
+    }
+
+    private Vector3 CalculateNodeVelocity(XRNode node)
+    {
+        Vector3 velocity = Vector3.zero;
+        if (TryGetNodeVelocity(node, out Vector3 nodeVelocity))
+        {
+            if (nodeVelocity.magnitude > boostThreshold)
+            {
+                return transform.forward * nodeVelocity.magnitude;
+            }
+        }
+        return velocity;
     }
 
     private bool TryGetNodeVelocity(XRNode nodeType, out Vector3 velocity)
