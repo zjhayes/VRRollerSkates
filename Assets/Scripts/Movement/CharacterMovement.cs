@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -20,7 +22,7 @@ public class CharacterMovement : MonoBehaviour
     private float gravity = 9.81f;
 
     private Vector3 momentum;
-    private float stopVelocity = 0.001f; // The velocity threshold considered stopped.
+    private readonly float stopVelocity = 0.001f; // The velocity threshold considered stopped.
 
     private void Start()
     {
@@ -29,13 +31,12 @@ public class CharacterMovement : MonoBehaviour
 
     private void Update()
     {
-        // Apply acceleration from motion.
-        momentum += CalculateAccelerationFromHandMotion();
-
+        HandleMovementFromHandMotion();
+        
         // Apply gravity.
         momentum.y -= gravity * Time.deltaTime;
 
-        // Cast a ray to detect ground and calculate the ground normal
+        // Cast a ray to detect ground and calculate the ground normal.
         RaycastHit hit;
         Vector3 groundNormal = Vector3.up; // Default to upright
         if (Physics.Raycast(transform.position, -Vector3.up, out hit, controller.height / 2 + 0.1f))
@@ -78,88 +79,78 @@ public class CharacterMovement : MonoBehaviour
         controller.Move(momentum * Time.deltaTime);
     }
 
-    private Vector3 CalculateAccelerationFromHandMotion()
+    private void HandleMovementFromHandMotion()
     {
-        Vector3 velocity = Vector3.zero;
+        List<Vector3> controllerVelocities = GetControllerVelocities();
+        Vector3 controllerMotionInput = VectorService.CalculateAverageVector(controllerVelocities);
 
-        //velocity += CalculateNodeVelocity(XRNode.LeftHand);
-        //velocity += CalculateNodeVelocity(XRNode.RightHand);
+        // Move character forward.
+        Vector3 direction = CalculateForwardDirectionFromInput(controllerMotionInput);
+        float magnitude = CalculateForwardMagnitudeFromInput(controllerMotionInput);
+        // Calculate the final velocity by multiplying the direction by the magnitude.
+        Vector3 finalVelocity = direction * magnitude;
 
-        velocity += CalculateControllerForwardInput();
-        //velocity += CalculateControllerForwardInput();
+        // Transform the final velocity from local space to global space.
+        momentum += transform.TransformDirection(finalVelocity);
 
-        return velocity;
+        // Rotate character.
+        float rotationInput = CalculateRotationFromInput(controllerMotionInput);
+        RotateCharacter(rotationInput);
     }
 
-    private Vector3 CalculateControllerForwardInput()
+    private List<Vector3> GetControllerVelocities()
     {
-        Vector3 averageVelocity = Vector3.zero;
-        int contributingHands = 0;
-        /*if(nodeManager.TryGetNodeVelocity(XRNode.LeftHand, out Vector3 leftHandVelocity))
-        {
-            Vector3 localLeftHandVelocity = transform.InverseTransformDirection(leftHandVelocity);
-            averageVelocity += localLeftHandVelocity;
-            contributingHands++;
-        }*/
+        List<Vector3> controllerVelocities = new List<Vector3>();
 
-        if(TryCalculateHandInputVelocity(XRNode.LeftHand, out Vector3 leftHandVelocity))
+        if (TryCalculateControllerVelocity(XRNode.LeftHand, out Vector3 leftHandVelocity))
         {
-            averageVelocity += leftHandVelocity;
-            contributingHands++;
+            controllerVelocities.Add(leftHandVelocity);
         }
 
-        if (TryCalculateHandInputVelocity(XRNode.RightHand, out Vector3 rightHandVelocity))
+        if (TryCalculateControllerVelocity(XRNode.RightHand, out Vector3 rightHandVelocity))
         {
-            //Vector3 localRightHandVelocity = transform.InverseTransformDirection(rightHandVelocity);
-            //averageVelocity += localRightHandVelocity;
-            averageVelocity += rightHandVelocity;
-            contributingHands++;
-        }
-        
-        if(contributingHands > 0)
-        {
-            averageVelocity /= contributingHands;
-            /*
-            // Transform the average velocity from global space to local space.
-            Vector3 localAverageVelocity = transform.InverseTransformDirection(averageVelocity);
-            
-            // Ensure that the direction is relative to the character's forward direction.
-            localAverageVelocity.x = localAverageVelocity.x + localAverageVelocity.y;
-            localAverageVelocity.y = 0; // Zero out the vertical component.
-            localAverageVelocity.Normalize();
-
-            return localAverageVelocity;*/
-
-            // Calculate the magnitude of the total velocity.
-            float magnitude = averageVelocity.magnitude;
-
-            // Normalize the total velocity to get the direction.
-            Vector3 direction = averageVelocity.normalized;
-
-            // Extract the X-axis motion for rotation.
-            float rotationInput = direction.x;
-
-            // Calculate the forward motion by removing the X-axis contribution.
-            direction.x = 0;
-
-            // Ensure that the direction is relative to the character's forward direction.
-            direction.z = direction.z + direction.y;
-            direction.y = 0; // Zero out the vertical component.
-            direction.Normalize();
-
-            // Calculate the final velocity by multiplying the direction by the magnitude.
-            Vector3 finalVelocity = direction * magnitude;
-
-            // Transform the final velocity from local space to global space.
-            finalVelocity = transform.TransformDirection(finalVelocity);
-
-            // Rotate the character based on the X-axis motion.
-            RotateCharacter(rotationInput);
-
-            return finalVelocity;
+            controllerVelocities.Add(rightHandVelocity);
         }
 
-        return averageVelocity;
+        return controllerVelocities;
+    }
+
+    private Vector3 CalculateForwardDirectionFromInput(Vector3 input)
+    {
+        // Normalize the total velocity to get the direction.
+        Vector3 direction = input.normalized;
+
+        // Calculate the forward motion by removing the X-axis contribution.
+        direction.x = 0;
+
+        // Ensure that the direction is relative to the character's forward direction.
+        direction.z = direction.z + direction.y; // Upward and forward motion contributes to forward movement.
+        direction.y = 0; // Zero out the vertical component.
+        direction.Normalize();
+
+        return direction;
+    }
+
+    private float CalculateForwardMagnitudeFromInput(Vector3 input)
+    {
+        return input.magnitude;
+    }
+
+    private bool TryCalculateControllerVelocity(XRNode node, out Vector3 handVelocity)
+    {
+        if (nodeManager.TryGetNodeVelocity(node, out handVelocity) && handVelocity.magnitude > boostThreshold)
+        {
+            return true;
+        }
+        else return false;
+    }
+
+    private float CalculateRotationFromInput(Vector3 input)
+    {
+        Vector3 direction = input.normalized;
+
+        // Extract the X-axis motion for rotation.
+        return direction.x;
     }
 
     private void RotateCharacter(float rotationInput)
@@ -172,56 +163,5 @@ public class CharacterMovement : MonoBehaviour
         
         // Rotate the character around the Y-axis.
         transform.Rotate(Vector3.up, rotationAngle);
-    }
-
-    private bool TryCalculateHandInputVelocity(XRNode node, out Vector3 handVelocity)
-    {
-        if (nodeManager.TryGetNodeVelocity(node, out handVelocity) && handVelocity.magnitude > boostThreshold)
-        {
-            //Vector3 localRightHandVelocity = transform.InverseTransformDirection(rightHandVelocity);
-            //averageVelocity += localRightHandVelocity;
-            return true;
-        }
-        else return false;
-    }
-    /*
-    private Vector3 CalculateNodeVelocity(XRNode node)
-    {
-        Vector3 velocity = Vector3.zero;
-
-        if (nodeManager.TryGetNodeVelocity(node, out Vector3 nodeVelocity) && nodeManager.TryGetNodeForward(node, out Vector3 nodeForward))
-        {
-            // Return the magnitude of the nodeVelocity vector in its direction
-            velocity = nodeForward * nodeVelocity.magnitude;// headTransform.forward * nodeVelocity.magnitude;//nodeForward * nodeVelocity.magnitude;
-        }
-
-        return velocity;
-    }*/
-
-    private Vector3 CalculateNodeVelocity(XRNode node)
-    {
-        Vector3 velocity = Vector3.zero;
-
-        if (nodeManager.TryGetNodeVelocity(node, out Vector3 nodeVelocity))
-        {
-            // Return the magnitude of the nodeVelocity vector in its direction
-            velocity = nodeVelocity;// * nodeVelocity.magnitude;// headTransform.forward * nodeVelocity.magnitude;//nodeForward * nodeVelocity.magnitude;
-        }
-
-        return velocity;
-    }
-
-    private Vector3 CalculateAverageControllerDirection()
-    {
-        Vector3 averageControllerDirection = Vector3.zero;
-
-        if(nodeManager.TryGetNodeForward(XRNode.LeftHand, out Vector3 leftControllerForward) &&
-            nodeManager.TryGetNodeForward(XRNode.RightHand, out Vector3 rightControllerForward))
-        {
-            // Return average direction.
-            averageControllerDirection = (leftControllerForward + rightControllerForward).normalized;
-        }
-
-        return averageControllerDirection;
     }
 }
