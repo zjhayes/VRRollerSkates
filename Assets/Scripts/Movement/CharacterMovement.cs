@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.XR;
 
+
 public class CharacterMovement : MonoBehaviour
 {
     [SerializeField]
@@ -14,11 +15,12 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField]
     private float maximumVelocity = 10f;
     [SerializeField]
-    private float momentumDecay = 0.99f;
+    private float momentumDecayTime = 1.0f;
     [SerializeField]
     private float gravity = 9.81f;
 
     private Vector3 momentum;
+    private float stopVelocity = 0.001f; // The minimum velocity threshold before stopped.
 
     private void Start()
     {
@@ -28,9 +30,12 @@ public class CharacterMovement : MonoBehaviour
     private void Update()
     {
         // Calculate forward motion
-        Vector3 boostVelocity = CalculateVelocityFromHandMotion();
+        //Vector3 boostVelocity = CalculateVelocityFromHandMotion();
 
-        momentum += boostVelocity;
+        //momentum += boostVelocity;
+
+        // Apply acceleration from motion.
+        momentum += CalculateAccelerationFromHandMotion();
 
         // Apply gravity
         momentum.y -= gravity * Time.deltaTime;
@@ -51,55 +56,77 @@ public class CharacterMovement : MonoBehaviour
             // Calculate a speed multiplier based on the slope angle
             float slopeSpeedMultiplier = Mathf.Lerp(1f, 1.5f, slopeAngle / 45f);
 
-            // Apply the speed multiplier to the move direction
-            momentum = Vector3.ProjectOnPlane(momentum, groundNormal) * slopeSpeedMultiplier;
-        }
-        else
-        {
-            momentum *= momentumDecay;
+            // Calculate the slope-adjusted momentum direction
+            Vector3 slopeAdjustedMomentum = Vector3.ProjectOnPlane(momentum, groundNormal) * slopeSpeedMultiplier;
+
+            // Blend the slope-adjusted momentum with the original momentum
+            float blendFactor = 0.5f;
+            momentum = Vector3.Lerp(momentum, slopeAdjustedMomentum, blendFactor); // Adjust blending factor as needed
         }
 
-        // Clamp to maximum velocity.
+        if (momentum.magnitude > 0f)
+        {
+            // Apply smoothed momentum decay.
+            momentum = Vector3.Lerp(momentum, Vector3.zero, Time.deltaTime / momentumDecayTime);
+        }
+        
         if (momentum.magnitude > maximumVelocity)
         {
+            // Clamp to maximum velocity.
             momentum = momentum.normalized * maximumVelocity;
+        }
+        else if(momentum.magnitude < stopVelocity)
+        {
+            momentum = Vector3.zero;
         }
 
         controller.Move(momentum * Time.deltaTime);
     }
 
-    private Vector3 CalculateVelocityFromHandMotion()
+    private Vector3 CalculateAccelerationFromHandMotion()
     {
         Vector3 velocity = Vector3.zero;
 
         velocity += CalculateNodeVelocity(XRNode.LeftHand);
         velocity += CalculateNodeVelocity(XRNode.RightHand);
 
-        return velocity;
+        if (velocity.magnitude > boostThreshold)
+        {
+            return velocity;
+        }
+
+        return Vector3.zero;
     }
 
     private Vector3 CalculateNodeVelocity(XRNode node)
     {
         Vector3 velocity = Vector3.zero;
-        if (TryGetNodeVelocity(node, out Vector3 nodeVelocity))
+
+        if (nodeManager.TryGetNodeVelocity(node, out Vector3 nodeVelocity) && nodeManager.TryGetNodeForward(node, out Vector3 nodeForward))
         {
-            if (nodeVelocity.magnitude > boostThreshold)
-            {
-                return headTransform.forward * nodeVelocity.magnitude;
-            }
+            // Get the normalized direction from the velocity vector
+            Vector3 nodePosition = nodeManager.TryGetNodePosition(node, out nodePosition) ? nodePosition : Vector3.zero;
+
+            Debug.DrawRay(headTransform.position, nodeForward, Color.green); // Draw a ray from headTransform position in the direction of nodeForward
+
+            // Return the magnitude of the nodeVelocity vector in its direction
+            velocity = nodeForward * nodeVelocity.magnitude;// headTransform.forward * nodeVelocity.magnitude;//nodeForward * nodeVelocity.magnitude;
         }
+
         return velocity;
     }
 
-    private bool TryGetNodeVelocity(XRNode nodeType, out Vector3 velocity)
+    private Vector3 CalculateAverageControllerDirection()
     {
-        velocity = Vector3.zero;
-        if (nodeManager.TryGetNodeState(nodeType, out XRNodeState nodeState) &&
-            nodeState.TryGetVelocity(out velocity))
+        Vector3 averageControllerDirection = Vector3.zero;
+
+        if(nodeManager.TryGetNodeForward(XRNode.LeftHand, out Vector3 leftControllerForward) &&
+            nodeManager.TryGetNodeForward(XRNode.RightHand, out Vector3 rightControllerForward))
         {
-            // Node velocity found.
-            return true;
+            // Return average direction.
+            averageControllerDirection = (leftControllerForward + rightControllerForward).normalized;
         }
-        return false; // Couldn't get velocity.
+
+        return averageControllerDirection;
     }
 }

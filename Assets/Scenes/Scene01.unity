@@ -801,28 +801,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -4.42
       objectReference: {fileID: 0}
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
@@ -869,11 +854,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall
       objectReference: {fileID: 0}
-    - target: {fileID: 7353174916323382542, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: e4e6e256213f45840a69d9771dee9fb4, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 54f7b8660f078c54f82cba17a398a9b0, type: 3}
 --- !u!4 &131763571 stripped
@@ -1319,7 +1299,7 @@ CharacterController:
   serializedVersion: 2
   m_Height: 2
   m_Radius: 0.2
-  m_SlopeLimit: 45
+  m_SlopeLimit: 80
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
@@ -1339,9 +1319,9 @@ MonoBehaviour:
   controller: {fileID: 812972970}
   headTransform: {fileID: 1548813295}
   nodeManager: {fileID: 780524960}
-  boostThreshold: 0.5
+  boostThreshold: 1
   maximumVelocity: 50
-  momentumDecay: 0.99
+  momentumDecayTime: 1
   gravity: 9.81
 --- !u!1 &832575517
 GameObject:
@@ -2377,23 +2357,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
       propertyPath: m_LocalPosition.x
-      value: 98.25
+      value: 97.92
       objectReference: {fileID: 0}
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
@@ -2418,12 +2383,12 @@ PrefabInstance:
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.5
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.5
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
@@ -2438,18 +2403,13 @@ PrefabInstance:
     - target: {fileID: 1964523556030726988, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: 180
       objectReference: {fileID: 0}
     - target: {fileID: 6324034018175851915, guid: 54f7b8660f078c54f82cba17a398a9b0,
         type: 3}
       propertyPath: m_Name
       value: Wall (1)
       objectReference: {fileID: 0}
-    - target: {fileID: 7353174916323382542, guid: 54f7b8660f078c54f82cba17a398a9b0,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: e4e6e256213f45840a69d9771dee9fb4, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 54f7b8660f078c54f82cba17a398a9b0, type: 3}
 --- !u!4 &1907500536 stripped
