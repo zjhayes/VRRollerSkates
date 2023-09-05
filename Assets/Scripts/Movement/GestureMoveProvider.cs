@@ -7,29 +7,7 @@ public class GestureMoveProvider : GameBehaviour
     [SerializeField]
     private float motionMagnitudeThreshold = 1f;
 
-    public void HandleMovementFromHandMotion()
-    {
-        List<Vector3> controllerVelocities = GetControllerVelocities();
-        Vector3 controllerMotionInput = VectorService.CalculateAverageVector(controllerVelocities);
-
-        // Move character forward.
-        Vector3 direction = CalculateForwardDirectionFromInput(controllerMotionInput);
-        float magnitude = CalculateForwardMagnitudeFromInput(controllerMotionInput);
-        // Calculate the final velocity by multiplying the direction by the magnitude.
-        Vector3 velocity = direction * magnitude;
-
-        // Transform the final velocity from local space to global space.
-        Vector3 localVelocity = transform.TransformDirection(velocity);
-        
-        // Add to momentum.
-        gameManager.Player.Physics.Momentum += localVelocity;
-
-        // Rotate character.
-        float rotationInput = CalculateRotationFromInput(controllerMotionInput);
-        gameManager.Player.Physics.AngularMomentum += rotationInput;
-    }
-
-    private List<Vector3> GetControllerVelocities()
+    public List<Vector3> GetControllerVelocities()
     {
         List<Vector3> controllerVelocities = new List<Vector3>();
 
@@ -46,7 +24,7 @@ public class GestureMoveProvider : GameBehaviour
         return controllerVelocities;
     }
 
-    private Vector3 CalculateForwardDirectionFromInput(Vector3 input)
+    public Vector3 CalculateForwardDirectionFromInput(Vector3 input)
     {
         // Normalize the total velocity to get the direction.
         Vector3 direction = input.normalized;
@@ -62,25 +40,26 @@ public class GestureMoveProvider : GameBehaviour
         return direction;
     }
 
-    private float CalculateForwardMagnitudeFromInput(Vector3 input)
+    public float CalculateForwardMagnitudeFromInput(Vector3 input)
     {
         return input.magnitude;
     }
 
-    private bool TryCalculateControllerVelocity(XRNode node, out Vector3 handVelocity)
-    {
-        if (gameManager.XR.NodeManager.TryGetNodeVelocity(node, out handVelocity) && handVelocity.magnitude > motionMagnitudeThreshold)
-        {
-            return true;
-        }
-        else return false;
-    }
-
-    private float CalculateRotationFromInput(Vector3 input)
+    public float CalculateRotationFromInput(Vector3 input)
     {
         Vector3 direction = input.normalized;
 
         // Extract the X-axis motion for rotation.
         return direction.x;
+    }
+
+    private bool TryCalculateControllerVelocity(XRNode node, out Vector3 handVelocity)
+    {
+        if (gameManager.XR.NodeManager.TryGetNodeVelocity(node, out handVelocity) && 
+            handVelocity.magnitude > motionMagnitudeThreshold)
+        {
+            return true;
+        }
+        else return false;
     }
 }

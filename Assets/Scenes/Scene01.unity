@@ -1260,7 +1260,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7239915e0e386eb4ab9c9b14f35d666e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveProvider: {fileID: 812972972}
 --- !u!114 &812972972
 MonoBehaviour:
   m_ObjectHideFlags: 0
