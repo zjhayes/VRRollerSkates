@@ -7,11 +7,13 @@ public class PlayerPhysics : GameBehaviour
     [SerializeField]
     private float maximumVelocity = 50f;
     [SerializeField]
+    private float maxAngularMomentum = 10f;
+    [SerializeField]
     private float momentumDecayTime = 1.0f;
 
     private readonly float stopVelocity = 0.001f; // The velocity threshold considered stopped.
     private Vector3 momentum;
-    private float angularMomentum; // TODO: Switch to quaternion
+    private float angularMomentum;
 
     public event Delegates.UpdateAction OnUpdateMomentum;
 
@@ -25,6 +27,7 @@ public class PlayerPhysics : GameBehaviour
     {
         UpdateMomentum();
         ApplyMomentumToMovement();
+        ApplyAngularMomentum();
     }
 
     private void UpdateMomentum()
@@ -32,7 +35,6 @@ public class PlayerPhysics : GameBehaviour
         OnUpdateMomentum?.Invoke();
         ApplyGravity();
         ApplySlope();
-        ApplyAngularMomentum(angularMomentum);
         ApplyMomentumDecay();
         ClampMomentum();
     }
@@ -61,6 +63,9 @@ public class PlayerPhysics : GameBehaviour
             // Apply smoothed momentum decay.
             momentum = Vector3.Lerp(momentum, Vector3.zero, Time.deltaTime / momentumDecayTime);
         }
+
+        // Apply angular momentum decay
+        angularMomentum = Mathf.Lerp(angularMomentum, 0f, Time.deltaTime / momentumDecayTime);
     }
 
     private void ApplySlope()
@@ -90,18 +95,6 @@ public class PlayerPhysics : GameBehaviour
         }
     }
 
-    private void ApplyAngularMomentum(float input)
-    {
-        // You can adjust the rotation speed based on the input.
-        float rotationSpeed = 45f; // Adjust as needed.
-
-        // Calculate the rotation angle based on input and time.
-        float rotationAngle = input * rotationSpeed * Time.deltaTime;
-
-        // Rotate the character around the Y-axis.
-        transform.Rotate(Vector3.up, rotationAngle);
-    }
-
     private void ClampMomentum()
     {
 
@@ -114,10 +107,24 @@ public class PlayerPhysics : GameBehaviour
         {
             momentum = Vector3.zero;
         }
+
+        // Clamp angularMomentum.
+        angularMomentum = Mathf.Clamp(angularMomentum, -maxAngularMomentum, maxAngularMomentum);
     }
 
     private void ApplyMomentumToMovement()
     {
-        gameManager.Player.Controller.Move(gameManager.Player.Physics.Momentum * Time.deltaTime);
+        gameManager.Player.Controller.Move(momentum * Time.deltaTime);
+    }
+
+    private void ApplyAngularMomentum()
+    {
+        float rotationFriction = 1.0f;
+
+        // Calculate the rotation angle based on input and time.
+        float rotationAngle = angularMomentum * rotationFriction * Time.deltaTime;
+
+        // Rotate the character around the Y-axis based on angularMomentum.
+        transform.Rotate(Vector3.up, angularMomentum);
     }
 }

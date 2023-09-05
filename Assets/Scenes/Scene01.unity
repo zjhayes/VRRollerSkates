@@ -1260,6 +1260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7239915e0e386eb4ab9c9b14f35d666e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rotationSpeed: 5
 --- !u!114 &812972972
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1272,7 +1273,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec1c23b9ecb35354bb25797f9c1e16ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  motionMagnitudeThreshold: 1
+  motionMagnitudeThreshold: 2
 --- !u!114 &812972973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1287,6 +1288,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gravity: 9.81
   maximumVelocity: 50
+  maxAngularMomentum: 1
   momentumDecayTime: 1
 --- !u!114 &812972974
 MonoBehaviour:
