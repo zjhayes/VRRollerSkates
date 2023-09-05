@@ -425,15 +425,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
-                },
-                {
-                    "name": "Velocity",
-                    "type": "Value",
-                    "id": "9755feed-3e40-4ca2-acec-a69323be132f",
-                    "expectedControlType": "Vector3",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -643,17 +634,6 @@
                     "processors": "",
                     "groups": "Generic XR Controller",
                     "action": "Aim Flags",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "3f4855b9-eefa-4b54-84ca-27560fbf07b4",
-                    "path": "<XRController>{LeftHand}/deviceVelocity",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Generic XR Controller",
-                    "action": "Velocity",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -1201,15 +1181,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
-                },
-                {
-                    "name": "Velocity",
-                    "type": "Value",
-                    "id": "f772d40f-9df9-4eca-9a2b-2226b8dfc6e3",
-                    "expectedControlType": "Vector3",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -1419,17 +1390,6 @@
                     "processors": "",
                     "groups": "Generic XR Controller",
                     "action": "Aim Flags",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "38e67c07-dbae-4d39-8be0-344052ce3c95",
-                    "path": "<XRController>{RightHand}/deviceVelocity",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Generic XR Controller",
-                    "action": "Velocity",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
