@@ -1066,10 +1066,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 812972965}
+  - component: {fileID: 812972974}
   - component: {fileID: 812972970}
-  - component: {fileID: 812972969}
   - component: {fileID: 812972971}
+  - component: {fileID: 812972973}
+  - component: {fileID: 812972972}
   - component: {fileID: 812972964}
+  - component: {fileID: 812972969}
   - component: {fileID: 812972962}
   - component: {fileID: 812972967}
   - component: {fileID: 812972968}
@@ -1257,12 +1260,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7239915e0e386eb4ab9c9b14f35d666e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 812972970}
-  headTransform: {fileID: 1548813295}
-  boostThreshold: 1
+  moveProvider: {fileID: 812972972}
+--- !u!114 &812972972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 812972961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec1c23b9ecb35354bb25797f9c1e16ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  motionMagnitudeThreshold: 1
+--- !u!114 &812972973
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 812972961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33838c2a7e94ae540985410b9ce7cd19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gravity: 9.81
   maximumVelocity: 50
   momentumDecayTime: 1
-  gravity: 9.81
+--- !u!114 &812972974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 812972961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da62e8f7b928a74091c1ce4a3c02d7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 812972970}
+  movement: {fileID: 812972971}
+  physics: {fileID: 812972973}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2279,6 +2320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   xr: {fileID: 1723838124}
+  player: {fileID: 812972974}
 --- !u!4 &1618578408
 Transform:
   m_ObjectHideFlags: 0

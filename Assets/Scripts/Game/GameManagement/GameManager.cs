@@ -4,6 +4,8 @@ public class GameManager : MonoBehaviour, IGameManager
 {
     [SerializeField]
     private XRManager xr;
+    [SerializeField]
+    private PlayerManager player;
 
     private void Awake()
     {
@@ -14,5 +16,10 @@ public class GameManager : MonoBehaviour, IGameManager
     public XRManager XR
     { 
         get { return xr; }
+    }
+
+    public PlayerManager Player
+    {
+        get { return player; }
     }
 }
