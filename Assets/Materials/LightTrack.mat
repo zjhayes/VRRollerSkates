@@ -50,7 +50,7 @@ Material:
     - _Choppiness: 0.001
     - _FlowSize: 2
     - _FlowSpeed: 0.005
-    - _FlowStrength: 0.001
+    - _FlowStrength: 0.002
     - _FoamDistance: 1.5
     - _QueueControl: 0
     - _QueueOffset: 0
@@ -58,6 +58,7 @@ Material:
     - _DarkFoamColor: {r: 0, g: 0.1, b: 0.4, a: 1}
     - _LightColor: {r: 0, g: 0.1882353, b: 0.7529412, a: 1}
     - _LightFoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _TrackColor: {r: 0, g: 0.1882353, b: 0.7529412, a: 1}
     - _WaterColor: {r: 0, g: 0.1882353, b: 0.7529412, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &8207768383721460812
