@@ -24,7 +24,7 @@ public class PlayerMovement : GameBehaviour
         Vector3 controllerMotionInput = VectorService.CalculateAverageVector(controllerVelocities);
 
         // Move character forward.
-        Vector3 direction = CalculateForwardDirectionFromInput(controllerMotionInput);
+        Vector3 direction = CalculateForwardDirectionFromInput(controllerMotionInput.normalized);
         float magnitude = controllerMotionInput.magnitude;
         Vector3 velocity = direction * magnitude;
 
@@ -34,22 +34,15 @@ public class PlayerMovement : GameBehaviour
         // Add to momentum.
         physics.Momentum += localVelocity;
 
-        // Rotate character.
-        float rotationInput = controllerMotionInput.x;
+        // Rotate character based on X movement.
+        float rotationInput = -controllerMotionInput.x;
         physics.AngularMomentum += rotationInput * rotationSpeed * Time.deltaTime;
     }
 
     private Vector3 CalculateForwardDirectionFromInput(Vector3 input)
     {
-        // Normalize the total velocity to get the direction.
-        Vector3 direction = input.normalized;
-
-        // Calculate the forward motion by removing the X-axis contribution.
-        direction.x = 0;
-
-        // Ensure that the direction is relative to the character's forward direction.
-        direction.z = direction.z + direction.y; // Upward and forward motion contributes to forward movement.
-        direction.y = 0; // Zero out the vertical component.
+        // Base direction on combined Y and Z axis motion.
+        Vector3 direction = new(0f, 0f, Mathf.Abs(input.z) + Mathf.Abs(input.y));
         direction.Normalize();
 
         return direction;
